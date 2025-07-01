@@ -4,9 +4,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:permission_handler/permission_handler.dart';
 
-// Update the import path if 'api_service.dart' is in another folder, for example:
 import '../services/api_service.dart';
-// Or, if the file does not exist, create 'lib/services/api_service.dart' and define the ApiService class there.
 import 'cart_controller.dart';
 import '../app/routes/app_pages.dart';
 
@@ -29,17 +27,35 @@ class CheckoutController extends GetxController {
   // Constants
   final double bakeryLat = -6.169552;
   final double bakeryLon = 106.564908;
-  final double costPerKm = 3000.0;
+  // `costPerKm` sudah dihapus dari sini
 
   @override
   void onInit() {
     super.onInit();
     // Secara otomatis menghitung ongkir setiap kali jarak berubah
     ever(distanceInKm, (_) => _updateShippingFee());
+    // Juga hitung ulang jika status promo berubah
+    ever(cartController.promoInfo, (_) => _updateShippingFee());
+
+    // Panggil sekali di awal untuk inisialisasi
+    _updateShippingFee();
   }
 
   void _updateShippingFee() {
-    shippingFee.value = distanceInKm.value * costPerKm;
+    final promo = cartController.promoInfo.value;
+    if (promo == null) {
+      shippingFee.value = 0.0;
+      return;
+    }
+
+    // Jika pengguna berhak mendapatkan promo (gratis ongkir)
+    if (promo.isEligible) {
+      shippingFee.value = 0.0;
+    } else {
+      // Jika tidak, hitung ongkir menggunakan biaya per km dari API
+      final costPerKmFromApi = cartController.shippingCost.value.toDouble();
+      shippingFee.value = distanceInKm.value * costPerKmFromApi;
+    }
   }
 
   Future<void> getCurrentLocation() async {
@@ -50,12 +66,12 @@ class CheckoutController extends GetxController {
         userPosition = await Geolocator.getCurrentPosition(
             desiredAccuracy: LocationAccuracy.high);
 
-        // Hitung jarak
+        // Menghitung jarak akan secara otomatis memicu _updateShippingFee()
+        // karena ada listener `ever(distanceInKm, ...)` di onInit()
         distanceInKm.value = Geolocator.distanceBetween(bakeryLat, bakeryLon,
                 userPosition!.latitude, userPosition!.longitude) /
-            1000; // dibagi 1000 untuk konversi ke KM
+            1000; // Konversi ke KM
 
-        // Dapatkan alamat dari koordinat
         List<Placemark> placemarks = await placemarkFromCoordinates(
             userPosition!.latitude, userPosition!.longitude);
         if (placemarks.isNotEmpty) {
@@ -93,14 +109,8 @@ class CheckoutController extends GetxController {
         shippingFee: shippingFee.value,
       );
 
-      // Refresh keranjang (opsional, tapi bagus untuk dilakukan)
       await Get.find<CartController>().fetchCartItems();
-
-      // **BAGIAN KUNCI ADA DI SINI**
-      // Kita navigasi ke halaman PAYMENT dan mengirimkan token sebagai argumen.
-      // Get.offNamed akan mengganti halaman checkout, jadi pengguna tidak bisa kembali.
       Get.offNamed(Routes.PAYMENT, arguments: response.paymentToken);
-
       Get.snackbar(
           'Sukses', 'Pesanan berhasil dibuat! Lanjutkan ke pembayaran.');
     } catch (e) {

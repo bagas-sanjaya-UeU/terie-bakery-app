@@ -1,4 +1,6 @@
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import '../app/routes/app_pages.dart';
 import '../models/product_model.dart';
 import '../services/api_service.dart';
 import '../controllers/cart_controller.dart'; // Import CartController untuk refresh keranjang
@@ -60,8 +62,13 @@ class ProductDetailController extends GetxController {
       // Panggil fungsi fetchCartItems dari CartController untuk refresh data
       Get.find<CartController>().fetchCartItems();
 
-      Get.snackbar('Sukses',
-          '${product.value!.name} berhasil ditambahkan ke keranjang.');
+      Get.snackbar(
+        'Sukses',
+        '${product.value!.name} berhasil ditambahkan ke keranjang.',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.green,
+      );
+      // Navigasi ke halaman keranjang
     } catch (e) {
       print("Error adding to cart: $e");
       Get.snackbar('Error', e.toString());

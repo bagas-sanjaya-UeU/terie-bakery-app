@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
-import '../app/routes/app_pages.dart';
 import '../controllers/cart_controller.dart';
 import '../controllers/checkout_controller.dart';
 
@@ -16,8 +15,10 @@ class CheckoutPage extends GetView<CheckoutController> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Checkout Pesanan"),
+        title: const Text("Checkout Pesanan",
+            style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
         backgroundColor: const Color(0xFF6D4C41),
+        centerTitle: true,
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
@@ -142,16 +143,18 @@ class CheckoutPage extends GetView<CheckoutController> {
         padding: const EdgeInsets.all(16.0),
         child: Obx(() => Column(
               children: [
+                // PERBAIKAN DI SINI: Gunakan subtotal, bukan totalPrice
                 _costRow("Subtotal Pesanan",
-                    currencyFormatter.format(cartController.totalPrice.value)),
+                    currencyFormatter.format(cartController.subtotal.value)),
                 const Divider(height: 20),
                 _costRow(
                     "Ongkos Kirim (${controller.distanceInKm.value.toStringAsFixed(1)} km)",
                     currencyFormatter.format(controller.shippingFee.value)),
                 const Divider(height: 20, thickness: 2),
+                // PERBAIKAN DI SINI: Gunakan subtotal, bukan totalPrice
                 _costRow(
                     "Total Pembayaran",
-                    currencyFormatter.format(cartController.totalPrice.value +
+                    currencyFormatter.format(cartController.subtotal.value +
                         controller.shippingFee.value),
                     isTotal: true),
               ],
@@ -200,50 +203,6 @@ class CheckoutPage extends GetView<CheckoutController> {
                       style: TextStyle(color: Colors.white)),
             ),
           )),
-    );
-  }
-}
-
-// Anda perlu membuat halaman PaymentPage sederhana untuk menerima argumen
-class PaymentPage extends StatelessWidget {
-  const PaymentPage({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    final paymentToken = Get.arguments as String?;
-    return Scaffold(
-      appBar: AppBar(title: const Text("Pembayaran")),
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(20.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Icon(Icons.check_circle_outline,
-                  color: Colors.green, size: 80),
-              const SizedBox(height: 20),
-              const Text("Pesanan Berhasil Dibuat!",
-                  style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
-              const SizedBox(height: 10),
-              const Text(
-                  "Lanjutkan pembayaran Anda menggunakan token di bawah ini.",
-                  textAlign: TextAlign.center),
-              const SizedBox(height: 20),
-              if (paymentToken != null)
-                SelectableText("Token Pembayaran:\n$paymentToken",
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(
-                        fontSize: 16, fontWeight: FontWeight.w600))
-              else
-                const Text("Token pembayaran tidak ditemukan."),
-              const SizedBox(height: 30),
-              ElevatedButton(
-                  onPressed: () => Get.offAllNamed(Routes.HOME),
-                  child: const Text("Kembali ke Beranda")),
-            ],
-          ),
-        ),
-      ),
     );
   }
 }

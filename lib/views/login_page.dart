@@ -33,7 +33,7 @@ class LoginPage extends StatelessWidget {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Image.asset('assets/image/Koki.png', width: 150),
+                  Image.asset('assets/image/Logo_terie.png', width: 150),
                   const SizedBox(height: 3),
                   const Text(
                     'Nikmati kelezatan-nya',

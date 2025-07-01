@@ -18,6 +18,8 @@ import '../../../../views/transaction_cancel_page.dart';
 import '../../../../views/transaction_expired_page.dart';
 import '../../../../views/order_detail_page.dart';
 import '../../bindings/order_detail_binding.dart';
+import '../../../../views/edit_profile_page.dart';
+import '../../bindings/edit_profile_binding.dart';
 
 // Import file routes
 part 'app_routes.dart';
@@ -30,7 +32,6 @@ class AppPages {
     GetPage(
       name: Routes.SPLASH,
       page: () => SplashScreen(),
-      // Di sini kita bisa menambahkan 'binding' untuk controller nanti
     ),
     GetPage(
       name: Routes.LOGIN,
@@ -72,8 +73,6 @@ class AppPages {
       // `Get.arguments` akan berisi `paymentToken` yang dikirim dari controller.
       page: () => payment.PaymentPage(snapToken: Get.arguments as String),
     ),
-
-    // --- DAFTARKAN SEMUA HALAMAN HASIL TRANSAKSI ---
     GetPage(
       name: Routes.TRANSACTION_SUCCESS,
       page: () => TransactionSuccessPage(),
@@ -96,6 +95,11 @@ class AppPages {
       name: Routes.ORDER_DETAIL,
       page: () => OrderDetailPage(),
       binding: OrderDetailBinding(),
+    ),
+    GetPage(
+      name: Routes.EDIT_PROFILE,
+      page: () => EditProfilePage(),
+      binding: EditProfileBinding(),
     ),
 // ...
   ];

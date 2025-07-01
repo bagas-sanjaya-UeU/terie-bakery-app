@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:intl/intl.dart'; // Tambahkan package intl untuk format harga
+import 'package:intl/intl.dart';
 import '../app/routes/app_pages.dart';
 import '../controllers/cart_controller.dart';
 import '../models/cart_item_model.dart';
@@ -8,7 +8,6 @@ import '../models/cart_item_model.dart';
 class KeranjangPage extends GetView<CartController> {
   KeranjangPage({Key? key}) : super(key: key);
 
-  // Formatter untuk harga
   final currencyFormatter =
       NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 0);
 
@@ -16,8 +15,10 @@ class KeranjangPage extends GetView<CartController> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Keranjang Saya'),
+        title: const Text('Keranjang Saya',
+            style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
         backgroundColor: const Color(0xFF6D4C41),
+        centerTitle: true,
       ),
       body: Obx(() {
         if (controller.isLoading.value) {
@@ -25,27 +26,113 @@ class KeranjangPage extends GetView<CartController> {
               child: CircularProgressIndicator(color: Colors.brown));
         }
         if (controller.cartItems.isEmpty) {
-          return const Center(
-              child: Text('Keranjang masih kosong.',
-                  style: TextStyle(fontSize: 18)));
-        }
-        return Column(
-          children: [
-            Expanded(
-              child: ListView.builder(
-                padding: const EdgeInsets.all(8),
-                itemCount: controller.cartItems.length,
-                itemBuilder: (context, index) {
-                  final item = controller.cartItems[index];
-                  return CartItemCard(item: item);
-                },
-              ),
+          return Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.shopping_cart_outlined,
+                    size: 80, color: Colors.grey.shade400),
+                const SizedBox(height: 16),
+                const Text('Keranjang masih kosong.',
+                    style: TextStyle(fontSize: 18, color: Colors.grey)),
+              ],
             ),
-            _buildSummary(),
-          ],
+          );
+        }
+        return RefreshIndicator(
+          onRefresh: controller.fetchCartItems,
+          child: Column(
+            children: [
+              _buildPromoInfo(),
+              Expanded(
+                child: ListView.builder(
+                  padding: const EdgeInsets.all(8),
+                  itemCount: controller.cartItems.length,
+                  itemBuilder: (context, index) {
+                    final item = controller.cartItems[index];
+                    return CartItemCard(item: item);
+                  },
+                ),
+              ),
+              _buildSummary(),
+            ],
+          ),
         );
       }),
     );
+  }
+
+  Widget _buildPromoInfo() {
+    return Obx(() {
+      final promo = controller.promoInfo.value;
+
+      // 1. Pengecekan awal, jika promo null, jangan tampilkan apa-apa.
+      if (promo == null) {
+        return const SizedBox.shrink();
+      }
+
+      if (promo.isEligible) {
+        return Container(
+          padding: const EdgeInsets.all(12),
+          margin: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: Colors.green.shade50,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: Colors.green),
+          ),
+          child: const Row(
+            children: [
+              Icon(Icons.check_circle, color: Colors.green),
+              SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  "Selamat! Anda mendapatkan gratis ongkir.",
+                  style: TextStyle(
+                      fontWeight: FontWeight.bold, color: Colors.green),
+                ),
+              ),
+            ],
+          ),
+        );
+      }
+
+      // --- PERBAIKAN DI SINI ---
+      // 2. Tambahkan pengecekan untuk menghindari pembagian dengan nol.
+      // Jika syarat gratis ongkir adalah 0 atau kurang, jangan tampilkan widget promo.
+      if (promo.freeShippingThreshold <= 0) {
+        return const SizedBox.shrink();
+      }
+
+      final progress = controller.subtotal.value / promo.freeShippingThreshold;
+
+      return Card(
+        margin: const EdgeInsets.all(8),
+        elevation: 2,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        child: Padding(
+          padding: const EdgeInsets.all(12.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                "Belanja ${currencyFormatter.format(promo.amountNeededForFreeShipping)} lagi untuk GRATIS ONGKIR!",
+                style: const TextStyle(fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 8),
+              ClipRRect(
+                borderRadius: BorderRadius.circular(5),
+                child: LinearProgressIndicator(
+                  value: progress,
+                  backgroundColor: Colors.grey.shade300,
+                  color: Colors.amber,
+                  minHeight: 10,
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    });
   }
 
   Widget _buildSummary() {
@@ -66,35 +153,36 @@ class KeranjangPage extends GetView<CartController> {
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text('Total Harga', style: TextStyle(color: Colors.grey)),
+              const Text('Subtotal', style: TextStyle(color: Colors.grey)),
               Obx(() => Text(
-                    currencyFormatter.format(controller.totalPrice.value),
+                    currencyFormatter.format(controller.subtotal.value),
                     style: const TextStyle(
                         fontWeight: FontWeight.bold, fontSize: 20),
                   )),
             ],
           ),
-          ElevatedButton(
-            onPressed: controller.cartItems.isEmpty ||
-                    controller.isLoading.value
-                ? null // Tombol nonaktif
-                : () => Get.toNamed(Routes.CHECKOUT), // Navigasi ke checkout
-            // ... (style tombol)
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.green,
-              padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 24),
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12)),
-            ),
-            child: const Text('Checkout',
-                style: TextStyle(color: Colors.white, fontSize: 16)),
-          ),
+          Obx(() => ElevatedButton(
+                onPressed:
+                    controller.cartItems.isEmpty || controller.isLoading.value
+                        ? null
+                        : () => Get.toNamed(Routes.CHECKOUT),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.green,
+                  padding:
+                      const EdgeInsets.symmetric(vertical: 12, horizontal: 24),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12)),
+                ),
+                child: const Text('Checkout',
+                    style: TextStyle(color: Colors.white, fontSize: 16)),
+              )),
         ],
       ),
     );
   }
 }
 
+// Widget CartItemCard tidak perlu diubah
 class CartItemCard extends GetView<CartController> {
   final CartItemModel item;
   final currencyFormatter =
@@ -144,19 +232,27 @@ class CartItemCard extends GetView<CartController> {
               ),
             ),
             const SizedBox(width: 12),
-            Row(
+            Column(
               children: [
                 IconButton(
-                    onPressed: () =>
-                        controller.updateQuantity(item, item.quantity - 1),
-                    icon: const Icon(Icons.remove_circle_outline)),
-                Text(item.quantity.toString(),
-                    style: const TextStyle(
-                        fontSize: 16, fontWeight: FontWeight.bold)),
-                IconButton(
-                    onPressed: () =>
-                        controller.updateQuantity(item, item.quantity + 1),
-                    icon: const Icon(Icons.add_circle_outline)),
+                  icon: const Icon(Icons.delete_outline, color: Colors.red),
+                  onPressed: () => controller.deleteItem(item),
+                ),
+                Row(
+                  children: [
+                    IconButton(
+                        onPressed: () =>
+                            controller.updateQuantity(item, item.quantity - 1),
+                        icon: const Icon(Icons.remove_circle_outline)),
+                    Text(item.quantity.toString(),
+                        style: const TextStyle(
+                            fontSize: 16, fontWeight: FontWeight.bold)),
+                    IconButton(
+                        onPressed: () =>
+                            controller.updateQuantity(item, item.quantity + 1),
+                        icon: const Icon(Icons.add_circle_outline)),
+                  ],
+                ),
               ],
             ),
           ],

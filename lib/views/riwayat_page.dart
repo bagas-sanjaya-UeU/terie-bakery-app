@@ -15,8 +15,10 @@ class RiwayatPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Riwayat Pesanan'),
+        title: const Text('Riwayat Pesanan',
+            style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
         backgroundColor: const Color(0xFF6D4C41),
+        centerTitle: true,
       ),
       body: Obx(() {
         if (controller.isLoading.value) {

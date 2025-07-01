@@ -17,4 +17,5 @@ abstract class Routes {
   static const TRANSACTION_CANCEL = '/transaction-cancel';
   static const TRANSACTION_EXPIRED = '/transaction-expired';
   static const ORDER_DETAIL = '/order-detail';
+  static const EDIT_PROFILE = '/edit-profile';
 }

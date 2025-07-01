@@ -1,9 +1,9 @@
 import 'dart:convert';
+import 'dart:io'; // Diperlukan untuk File
 import 'package:http/http.dart' as http;
 import 'package:get_storage/get_storage.dart';
 import '../models/product_model.dart'; // Import model produk
 import '../models/user_model.dart';
-
 import '../models/cart_model.dart'; // Import CartModel
 import '../models/checkout_response_model.dart';
 import '../models/order_summary_model.dart';
@@ -39,6 +39,7 @@ class ApiService {
         // 3. Simpan access token seperti sebelumnya
         await _storage.write('access_token', data['data']['access_token']);
         print("Login successful, token saved!");
+        print('Access Token: ${data['data']['access_token']}');
 
         // 4. Buat instance UserModel dari data JSON
         UserModel user = UserModel.fromJson(data['data']['user']);
@@ -354,6 +355,77 @@ class ApiService {
         return UserModel.fromJson(data['data']);
       } else {
         throw Exception(data['message'] ?? 'Gagal mengambil data profil.');
+      }
+    } catch (e) {
+      throw Exception(e.toString().replaceAll('Exception: ', ''));
+    }
+  }
+
+  Future<UserModel> updateProfile({
+    required String name,
+    required String phone,
+    required String address,
+    File? image, // Gambar bersifat opsional
+  }) async {
+    if (_token == null)
+      throw Exception('Sesi berakhir. Silakan login kembali.');
+
+    var uri = Uri.parse('$_baseUrl/profile/update');
+    var request = http.MultipartRequest('POST', uri);
+
+    // Tambahkan headers
+    request.headers.addAll(_headers);
+
+    // Tambahkan fields (data teks)
+    request.fields['name'] = name;
+    request.fields['phone'] = phone;
+    request.fields['address'] = address;
+
+    // Tambahkan file gambar jika ada
+    if (image != null) {
+      request.files.add(
+        await http.MultipartFile.fromPath('image', image.path),
+      );
+    }
+
+    try {
+      var streamedResponse = await request.send();
+      var response = await http.Response.fromStream(streamedResponse);
+      var data = jsonDecode(response.body);
+
+      if (response.statusCode == 200 && data['success'] == true) {
+        return UserModel.fromJson(data['data']);
+      } else {
+        throw Exception(data['message'] ?? 'Gagal memperbarui profil.');
+      }
+    } catch (e) {
+      throw Exception(e.toString().replaceAll('Exception: ', ''));
+    }
+  }
+
+  // --- FUNGSI UPDATE PASSWORD (BARU) ---
+  Future<void> updatePassword({
+    required String currentPassword,
+    required String newPassword,
+  }) async {
+    if (_token == null)
+      throw Exception('Sesi berakhir. Silakan login kembali.');
+
+    try {
+      final response = await http.post(
+        Uri.parse('$_baseUrl/profile/password'),
+        headers: _headers,
+        body: jsonEncode({
+          'current_password': currentPassword,
+          'password': newPassword,
+          'password_confirmation': newPassword,
+        }),
+      );
+
+      final data = jsonDecode(response.body);
+
+      if (response.statusCode != 200 || data['success'] != true) {
+        throw Exception(data['message'] ?? 'Gagal memperbarui password.');
       }
     } catch (e) {
       throw Exception(e.toString().replaceAll('Exception: ', ''));

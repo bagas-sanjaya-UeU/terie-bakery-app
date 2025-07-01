@@ -1,23 +1,34 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import '../app/routes/app_pages.dart';
 import '../controllers/profile_controller.dart';
 
 class ProfilPage extends StatelessWidget {
   ProfilPage({Key? key}) : super(key: key);
 
-  // Daftarkan controller. GetX akan mengelolanya.
   final ProfileController controller = Get.put(ProfileController());
 
   @override
   Widget build(BuildContext context) {
     final Color primaryColor = const Color(0xFF6D4C41);
-    final Color accentColor = const Color(0xFFFFC107);
 
     return Scaffold(
       appBar: AppBar(
         backgroundColor: primaryColor,
-        title: const Text('Profil Saya'),
+        title: const Text('Profil Saya',
+            style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
         centerTitle: true,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.edit, color: Colors.white),
+            onPressed: () {
+              if (controller.user.value != null) {
+                Get.toNamed(Routes.EDIT_PROFILE,
+                    arguments: controller.user.value);
+              }
+            },
+          ),
+        ],
       ),
       body: Obx(() {
         if (controller.isLoading.value) {
@@ -30,9 +41,14 @@ class ProfilPage extends StatelessWidget {
 
         final user = controller.user.value!;
 
-        // Membuat inisial dari nama untuk avatar
         final initials = user.name.isNotEmpty
-            ? user.name.trim().split(' ').map((l) => l[0]).take(2).join()
+            ? user.name
+                .trim()
+                .split(' ')
+                .map((l) => l[0])
+                .take(2)
+                .join()
+                .toUpperCase()
             : 'U';
 
         return RefreshIndicator(
@@ -41,16 +57,25 @@ class ProfilPage extends StatelessWidget {
             padding: const EdgeInsets.all(20.0),
             child: Column(
               children: [
+                // --- PERBAIKAN AVATAR DI SINI ---
                 CircleAvatar(
                   radius: 70,
                   backgroundColor: primaryColor.withOpacity(0.2),
-                  child: Text(
-                    initials,
-                    style: TextStyle(
-                        fontSize: 48,
-                        color: primaryColor,
-                        fontWeight: FontWeight.bold),
-                  ),
+                  // Gunakan backgroundImage. Jika null, Flutter akan otomatis menampilkan child.
+                  backgroundImage:
+                      user.imageUrl != null && user.imageUrl!.isNotEmpty
+                          ? NetworkImage(user.imageUrl!)
+                          : null,
+                  // Tampilkan inisial HANYA JIKA tidak ada gambar.
+                  child: (user.imageUrl == null || user.imageUrl!.isEmpty)
+                      ? Text(
+                          initials,
+                          style: TextStyle(
+                              fontSize: 48,
+                              color: primaryColor,
+                              fontWeight: FontWeight.bold),
+                        )
+                      : null, // Jangan tampilkan child jika ada backgroundImage
                 ),
                 const SizedBox(height: 16),
                 Text(
