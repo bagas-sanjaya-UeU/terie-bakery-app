@@ -1,35 +1,57 @@
 import 'package:get/get.dart';
 import '../models/product_model.dart';
+import '../models/banner_model.dart'; // Import model banner
 import '../services/api_service.dart';
 
 class HomeController extends GetxController {
   final ApiService _apiService = Get.find<ApiService>();
 
-  // Variabel reaktif untuk daftar produk dan status loading
+  // State untuk produk
   var productList = <ProductModel>[].obs;
   var isLoading = true.obs;
 
-  // onInit() adalah metode lifecycle GetX yang dipanggil saat controller dibuat.
-  // Sempurna untuk mengambil data awal.
+  // State baru untuk banner
+  var banners = Rxn<BannersResponseModel>();
+  var areBannersLoading = true.obs;
+
   @override
   void onInit() {
-    fetchProducts();
+    // Jalankan kedua fetch secara bersamaan untuk performa lebih baik
+    Future.wait([
+      fetchProducts(),
+      fetchBanners(),
+    ]);
     super.onInit();
   }
 
   Future<void> fetchProducts() async {
     try {
-      isLoading(true); // Mulai loading
+      isLoading(true);
       var products = await _apiService.getProducts();
-      productList.assignAll(products); // Isi productList dengan data dari API
+      productList.assignAll(products);
     } catch (e) {
-      Get.snackbar(
-        'Error',
-        'Gagal memuat produk: ${e.toString()}',
-        snackPosition: SnackPosition.BOTTOM,
-      );
+      print('Error fetching products: ${e.toString()}');
     } finally {
-      isLoading(false); // Selesai loading
+      isLoading(false);
     }
+  }
+
+  Future<void> fetchBanners() async {
+    try {
+      areBannersLoading(true);
+      banners.value = await _apiService.getBanners();
+    } catch (e) {
+      print('Error fetching banners: ${e.toString()}');
+    } finally {
+      areBannersLoading(false);
+    }
+  }
+
+  // Fungsi untuk me-refresh semua data di halaman beranda
+  Future<void> refreshHomePage() async {
+    await Future.wait([
+      fetchProducts(),
+      fetchBanners(),
+    ]);
   }
 }

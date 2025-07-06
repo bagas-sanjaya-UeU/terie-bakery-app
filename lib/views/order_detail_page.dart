@@ -13,7 +13,12 @@ class OrderDetailPage extends GetView<OrderDetailController> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Detail Pesanan")),
+      appBar: AppBar(
+        title: const Text("Detail Pesanan",
+            style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
+        backgroundColor: const Color(0xFF6D4C41),
+        centerTitle: true,
+      ),
       body: Obx(() {
         if (controller.isLoading.value) {
           return const Center(child: CircularProgressIndicator());
@@ -55,6 +60,8 @@ class OrderDetailPage extends GetView<OrderDetailController> {
         const SizedBox(height: 8),
         Card(
             elevation: 2,
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
             child: Padding(padding: const EdgeInsets.all(12), child: child)),
         const SizedBox(height: 16),
       ],
@@ -69,6 +76,9 @@ class OrderDetailPage extends GetView<OrderDetailController> {
                 padding: EdgeInsets.all(8.0),
                 child: CircularProgressIndicator(strokeWidth: 2)));
       }
+      if (controller.trackingList.isEmpty) {
+        return const Center(child: Text("Belum ada update pelacakan."));
+      }
       return Column(
         children: controller.trackingList
             .map((status) => _buildTimelineTile(status))
@@ -78,6 +88,7 @@ class OrderDetailPage extends GetView<OrderDetailController> {
   }
 
   Widget _buildTimelineTile(TrackingStatusModel status) {
+    // ... (kode ini tidak berubah)
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: Row(
@@ -111,22 +122,29 @@ class OrderDetailPage extends GetView<OrderDetailController> {
     );
   }
 
+  // --- PERBAIKAN DI SINI ---
   Widget _buildProductList() {
     final products = controller.orderDetail.value!.products;
     return Column(
-      children: products
-          .map((product) => ListTile(
-                leading: Image.network(product.imageUrl,
-                    width: 50, height: 50, fit: BoxFit.cover),
-                title: Text(product.name),
-                trailing:
-                    Text(currencyFormatter.format(double.parse(product.price))),
-              ))
-          .toList(),
+      children: products.map((item) {
+        // 'item' sekarang adalah OrderedProductModel
+        return ListTile(
+          leading: Image.network(
+              item.product.imageUrl, // Akses data produk melalui item.product
+              width: 50,
+              height: 50,
+              fit: BoxFit.cover),
+          title:
+              Text(item.product.name), // Akses data produk melalui item.product
+          subtitle: Text(
+              "${item.quantity} x ${currencyFormatter.format(double.parse(item.product.price))}"), // Gunakan item.quantity untuk kuantitas
+        );
+      }).toList(),
     );
   }
 
   Widget _buildShippingInfo() {
+    // ... (kode ini tidak berubah)
     final order = controller.orderDetail.value!;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -139,24 +157,49 @@ class OrderDetailPage extends GetView<OrderDetailController> {
     );
   }
 
+  // --- PERBAIKAN DI SINI ---
   Widget _buildPaymentDetails() {
     final order = controller.orderDetail.value!;
     return Column(
       children: [
-        Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-          const Text("Total Pesanan"),
-          Text(currencyFormatter.format(double.parse(order.totalPrice))),
-        ]),
+        _costRow(
+            "Subtotal", currencyFormatter.format(double.parse(order.subtotal))),
+        _costRow("Ongkos Kirim",
+            currencyFormatter.format(double.parse(order.shippingFee))),
+        const Divider(),
+        _costRow("Total Pembayaran",
+            currencyFormatter.format(double.parse(order.totalPrice)),
+            isTotal: true),
+        const SizedBox(height: 8),
         Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
           const Text("Status Pembayaran"),
           Text(order.paymentStatus.capitalizeFirst ?? '',
               style: TextStyle(
-                  color: order.paymentStatus == 'paid'
+                  color: order.paymentStatus == 'Sudah Dibayar'
                       ? Colors.green
                       : Colors.orange,
                   fontWeight: FontWeight.bold)),
         ]),
       ],
+    );
+  }
+
+  // Helper widget untuk merapikan kode
+  Widget _costRow(String title, String amount, {bool isTotal = false}) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4.0),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(title,
+              style: TextStyle(
+                  fontWeight: isTotal ? FontWeight.bold : FontWeight.normal,
+                  color: Colors.grey.shade700)),
+          Text(amount,
+              style: TextStyle(
+                  fontWeight: isTotal ? FontWeight.bold : FontWeight.normal)),
+        ],
+      ),
     );
   }
 }

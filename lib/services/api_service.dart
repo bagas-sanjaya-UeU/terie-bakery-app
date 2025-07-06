@@ -9,6 +9,7 @@ import '../models/checkout_response_model.dart';
 import '../models/order_summary_model.dart';
 import '../models/order_detail_model.dart';
 import '../models/tracking_status_model.dart';
+import '../models/banner_model.dart'; // Import model banner
 
 class ApiService {
   final String _baseUrl = "https://terie-bakery.biz.id/api";
@@ -54,6 +55,21 @@ class ApiService {
       // Tangkap semua jenis error (network, parsing, dll)
       print("Error during login: $e");
       // Umpan balik error ke controller dengan pesan yang lebih bersih
+      throw Exception(e.toString().replaceAll('Exception: ', ''));
+    }
+  }
+
+  Future<BannersResponseModel> getBanners() async {
+    try {
+      final response = await http.get(Uri.parse('$_baseUrl/banners'));
+      final data = jsonDecode(response.body);
+
+      if (response.statusCode == 200 && data['success'] == true) {
+        return BannersResponseModel.fromJson(data['data']);
+      } else {
+        throw Exception(data['message'] ?? 'Gagal mengambil data banner.');
+      }
+    } catch (e) {
       throw Exception(e.toString().replaceAll('Exception: ', ''));
     }
   }
