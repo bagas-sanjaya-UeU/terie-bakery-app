@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
-import 'package:carousel_slider/carousel_slider.dart'; // Import package carousel
+import 'package:carousel_slider/carousel_slider.dart';
 import '../app/routes/app_pages.dart';
 import '../controllers/home_controller.dart';
 import '../controllers/cart_controller.dart';
+import '../controllers/profile_controller.dart'; // 1. Import ProfileController
+import '../controllers/main_controller.dart'; // 2. Import MainController untuk navigasi tab
 import '../models/product_model.dart';
 
 class BerandaPage extends StatelessWidget {
@@ -30,10 +32,17 @@ class BerandaPage extends StatelessWidget {
                   child: _buildHeader(),
                 ),
               ),
-              // --- Bagian Banner Baru ---
+              // --- Bagian Banner ---
               SliverToBoxAdapter(
                 child: _buildBanners(),
               ),
+
+              // --- BAGIAN PRODUK TERLARIS BARU ---
+              SliverToBoxAdapter(
+                child: _buildBestsellersSection(),
+              ),
+
+              // --- Bagian Semua Produk ---
               SliverToBoxAdapter(
                 child: Padding(
                   padding: const EdgeInsets.fromLTRB(16, 20, 16, 8),
@@ -55,7 +64,7 @@ class BerandaPage extends StatelessWidget {
                   );
                 }
                 return SliverPadding(
-                  padding: const EdgeInsets.all(16),
+                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
                   sliver: SliverGrid(
                     gridDelegate:
                         const SliverGridDelegateWithFixedCrossAxisCount(
@@ -86,6 +95,10 @@ class BerandaPage extends StatelessWidget {
   }
 
   Widget _buildHeader() {
+    // 3. Dapatkan instance ProfileController dan MainController
+    final ProfileController profileController = Get.find();
+    final MainController mainController = Get.find();
+
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -98,10 +111,39 @@ class BerandaPage extends StatelessWidget {
                 style: TextStyle(color: Colors.grey)),
           ],
         ),
-        IconButton(
-          onPressed: () {},
-          icon: const Icon(Icons.notifications_outlined, size: 28),
-        ),
+        // 4. Gunakan Obx untuk membuat avatar reaktif
+        Obx(() {
+          final user = profileController.user.value;
+          final imageUrl = user?.imageUrl;
+          final initials = user?.name.isNotEmpty ?? false
+              ? user!.name
+                  .trim()
+                  .split(' ')
+                  .map((l) => l[0])
+                  .take(2)
+                  .join()
+                  .toUpperCase()
+              : 'U';
+
+          return GestureDetector(
+            onTap: () {
+              // 5. Pindah ke tab profil (index 3) saat avatar diklik
+              mainController.changeTabIndex(3);
+            },
+            child: CircleAvatar(
+              radius: 22,
+              backgroundColor: Colors.brown.shade100,
+              backgroundImage: (imageUrl != null && imageUrl.isNotEmpty)
+                  ? NetworkImage(imageUrl)
+                  : null,
+              child: (imageUrl == null || imageUrl.isEmpty)
+                  ? Text(initials,
+                      style: const TextStyle(
+                          fontWeight: FontWeight.bold, color: Colors.brown))
+                  : null,
+            ),
+          );
+        }),
       ],
     );
   }
@@ -116,7 +158,6 @@ class BerandaPage extends StatelessWidget {
   Widget _buildBanners() {
     return Obx(() {
       if (controller.areBannersLoading.value) {
-        // Tampilkan placeholder loading
         return Container(
           height: 150,
           margin: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
@@ -124,7 +165,9 @@ class BerandaPage extends StatelessWidget {
             color: Colors.grey.shade200,
             borderRadius: BorderRadius.circular(16),
           ),
-          child: const Center(child: CircularProgressIndicator(strokeWidth: 2)),
+          child: const Center(
+              child: CircularProgressIndicator(
+                  strokeWidth: 2, color: Colors.brown)),
         );
       }
 
@@ -137,13 +180,12 @@ class BerandaPage extends StatelessWidget {
       }
 
       if (imageUrls.isEmpty) {
-        return const SizedBox
-            .shrink(); // Jangan tampilkan apa-apa jika tidak ada banner
+        return const SizedBox.shrink();
       }
 
       return CarouselSlider(
         options: CarouselOptions(
-          height: 200.0,
+          height: 188.0,
           autoPlay: true,
           enlargeCenterPage: true,
           aspectRatio: 16 / 9,
@@ -155,13 +197,11 @@ class BerandaPage extends StatelessWidget {
               return Container(
                 width: MediaQuery.of(context).size.width,
                 margin: const EdgeInsets.symmetric(horizontal: 5.0),
-                decoration: BoxDecoration(
-                  color: Colors.amber,
-                  borderRadius: BorderRadius.circular(16),
-                ),
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(16),
-                  child: Image.network(url, fit: BoxFit.cover),
+                  child: Image.network(url,
+                      fit: BoxFit.cover,
+                      errorBuilder: (c, e, s) => const Icon(Icons.error)),
                 ),
               );
             },
@@ -170,9 +210,131 @@ class BerandaPage extends StatelessWidget {
       );
     });
   }
+
+  Widget _buildBestsellersSection() {
+    return Obx(() {
+      if (controller.areBestsellersLoading.value) {
+        return const SizedBox(
+            height: 220,
+            child:
+                Center(child: CircularProgressIndicator(color: Colors.brown)));
+      }
+      if (controller.bestsellerList.isEmpty) {
+        return const SizedBox.shrink();
+      }
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 20, 16, 8),
+            child: _buildSectionTitle("Produk Terlaris 🔥"),
+          ),
+          SizedBox(
+            height: 150, // Tinggi list dikecilkan
+            child: ListView.builder(
+              scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              itemCount: controller.bestsellerList.length,
+              itemBuilder: (context, index) {
+                final product = controller.bestsellerList[index];
+                return Container(
+                  width: 110, // Lebar kartu dikecilkan
+                  margin: const EdgeInsets.only(right: 12),
+                  // Gunakan widget kartu baru yang lebih kecil
+                  child: BestsellerCard(
+                    product: product,
+                    currencyFormatter: currencyFormatter,
+                  ),
+                );
+              },
+            ),
+          ),
+        ],
+      );
+    });
+  }
 }
 
-// ProductCard tidak perlu diubah
+// --- WIDGET BARU UNTUK KARTU PRODUK TERLARIS ---
+class BestsellerCard extends StatelessWidget {
+  final ProductModel product;
+  final NumberFormat currencyFormatter;
+
+  const BestsellerCard({
+    Key? key,
+    required this.product,
+    required this.currencyFormatter,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () {
+        Get.toNamed(Routes.PRODUCT_DETAIL, arguments: product.id);
+      },
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.brown.withOpacity(0.1),
+              spreadRadius: 1,
+              blurRadius: 10,
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              child: ClipRRect(
+                borderRadius:
+                    const BorderRadius.vertical(top: Radius.circular(16)),
+                child: Image.network(
+                  product.imageUrl,
+                  fit: BoxFit.cover,
+                  width: double.infinity,
+                  loadingBuilder: (context, child, progress) => progress == null
+                      ? child
+                      : const Center(
+                          child: CircularProgressIndicator(strokeWidth: 2)),
+                  errorBuilder: (context, error, stackTrace) => const Center(
+                      child: Icon(Icons.broken_image, color: Colors.grey)),
+                ),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(10.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    product.name,
+                    style: const TextStyle(
+                        fontWeight: FontWeight.bold, fontSize: 12),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    currencyFormatter.format(double.parse(product.price)),
+                    style: TextStyle(
+                      color: Colors.brown.shade800,
+                      fontWeight: FontWeight.w600,
+                      fontSize: 14,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 class ProductCard extends StatelessWidget {
   final ProductModel product;
   final NumberFormat currencyFormatter;
@@ -234,7 +396,7 @@ class ProductCard extends StatelessWidget {
                       product.name,
                       style: const TextStyle(
                           fontWeight: FontWeight.bold, fontSize: 16),
-                      maxLines: 2,
+                      maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
                     const Spacer(),

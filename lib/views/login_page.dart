@@ -34,20 +34,11 @@ class LoginPage extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Image.asset('assets/image/Logo_terie.png', width: 150),
-                  const SizedBox(height: 3),
-                  const Text(
-                    'Nikmati kelezatan-nya',
-                    style: TextStyle(
-                      fontStyle: FontStyle.italic,
-                      color: Color(0xFF795548),
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
                 ],
               ),
             ),
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 20),
+              padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 90),
               decoration: const BoxDecoration(
                 color: Color(0xFF5D4037),
                 borderRadius: BorderRadius.only(
@@ -118,16 +109,16 @@ class LoginPage extends StatelessWidget {
                         ),
                       )),
                   const SizedBox(height: 10),
-                  Align(
-                    alignment: Alignment.centerRight,
-                    child: TextButton(
-                      // 6. Gunakan Get.toNamed untuk navigasi
-                      onPressed: () => Get.toNamed(Routes.FORGOT_PASSWORD),
-                      child: const Text('Lupa Password?',
-                          style: TextStyle(color: Colors.white)),
-                    ),
-                  ),
-                  const SizedBox(height: 5),
+                  // Align(
+                  //   alignment: Alignment.centerRight,
+                  //   child: TextButton(
+                  //     // 6. Gunakan Get.toNamed untuk navigasi
+                  //     onPressed: () => Get.toNamed(Routes.FORGOT_PASSWORD),
+                  //     child: const Text('Lupa Password?',
+                  //         style: TextStyle(color: Colors.white)),
+                  //   ),
+                  // ),
+                  // const SizedBox(height: 5),
                   Center(
                     // 7. Bungkus tombol dengan Obx untuk menampilkan loading
                     child: Obx(() {

@@ -1,6 +1,6 @@
 import 'package:get/get.dart';
 import '../models/product_model.dart';
-import '../models/banner_model.dart'; // Import model banner
+import '../models/banner_model.dart';
 import '../services/api_service.dart';
 
 class HomeController extends GetxController {
@@ -10,18 +10,32 @@ class HomeController extends GetxController {
   var productList = <ProductModel>[].obs;
   var isLoading = true.obs;
 
-  // State baru untuk banner
+  // State untuk banner
   var banners = Rxn<BannersResponseModel>();
   var areBannersLoading = true.obs;
 
+  // --- STATE BARU UNTUK PRODUK TERLARIS ---
+  var bestsellerList = <ProductModel>[].obs;
+  var areBestsellersLoading = true.obs;
+
   @override
   void onInit() {
-    // Jalankan kedua fetch secara bersamaan untuk performa lebih baik
-    Future.wait([
-      fetchProducts(),
-      fetchBanners(),
-    ]);
+    // Panggil semua fungsi fetch saat controller pertama kali dibuat
+    refreshHomePage();
     super.onInit();
+  }
+
+  // --- FUNGSI BARU UNTUK FETCH BESTSELLERS ---
+  Future<void> fetchBestsellers() async {
+    try {
+      areBestsellersLoading(true);
+      var bestsellers = await _apiService.getBestsellers();
+      bestsellerList.assignAll(bestsellers);
+    } catch (e) {
+      print('Error fetching bestsellers: ${e.toString()}');
+    } finally {
+      areBestsellersLoading(false);
+    }
   }
 
   Future<void> fetchProducts() async {
@@ -47,11 +61,12 @@ class HomeController extends GetxController {
     }
   }
 
-  // Fungsi untuk me-refresh semua data di halaman beranda
+  // Fungsi refresh sekarang memanggil ketiga fungsi fetch
   Future<void> refreshHomePage() async {
     await Future.wait([
       fetchProducts(),
       fetchBanners(),
+      fetchBestsellers(),
     ]);
   }
 }

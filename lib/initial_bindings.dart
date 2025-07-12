@@ -5,6 +5,7 @@ import 'package:get/get.dart';
 import 'services/api_service.dart';
 // Kita akan buat file ini nanti
 import 'controllers/cart_controller.dart';
+import 'controllers/profile_controller.dart';
 
 class InitialBindings extends Bindings {
   @override
@@ -19,5 +20,6 @@ class InitialBindings extends Bindings {
 
     // Anda bisa menambahkan service atau controller global lainnya di sini.
     // Contoh: Get.lazyPut<AuthService>(() => AuthService(), fenix: true);
+    Get.lazyPut<ProfileController>(() => ProfileController(), fenix: true);
   }
 }

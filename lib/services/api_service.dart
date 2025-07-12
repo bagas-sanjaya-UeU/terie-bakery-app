@@ -59,6 +59,30 @@ class ApiService {
     }
   }
 
+  // --- FUNGSI GET BESTSELLERS (BARU) ---
+  Future<List<ProductModel>> getBestsellers() async {
+    try {
+      final response =
+          await http.get(Uri.parse('$_baseUrl/products/bestsellers'));
+      final data = jsonDecode(response.body);
+
+      if (response.statusCode == 200 && data['success'] == true) {
+        // Data produk terlaris ada di dalam 'data'
+        final List<dynamic> productListJson = data['data'];
+        return productListJson
+            .map((json) => ProductModel.fromJson(json))
+            .toList();
+      } else {
+        // Jika gagal atau data kosong, kembalikan list kosong
+        return [];
+      }
+    } catch (e) {
+      print("Error fetching bestsellers: $e");
+      // Kembalikan list kosong jika terjadi error
+      return [];
+    }
+  }
+
   Future<BannersResponseModel> getBanners() async {
     try {
       final response = await http.get(Uri.parse('$_baseUrl/banners'));
