@@ -20,8 +20,8 @@ class _PaymentPageState extends State<PaymentPage> {
   void initState() {
     super.initState();
 
-    final Uri paymentUrl =
-        Uri.parse("https://app.midtrans.com/snap/v2/vtweb/${widget.snapToken}");
+    final Uri paymentUrl = Uri.parse(
+        "https://app.sandbox.midtrans.com/snap/v2/vtweb/${widget.snapToken}");
 
     _webViewController = WebViewController()
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
