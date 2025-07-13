@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart'; // 1. Import GetStorage
 import 'package:intl/date_symbol_data_local.dart'; // 1. Import ini
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'app/routes/app_pages.dart';
 import 'initial_bindings.dart';
 
@@ -25,6 +26,19 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.brown,
         scaffoldBackgroundColor: const Color(0xFFFDF4EC),
       ),
+
+      localizationsDelegates: const [
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      supportedLocales: const [
+        Locale('id', 'ID'), // Mendukung Bahasa Indonesia
+        // Anda bisa menambahkan bahasa lain di sini jika perlu
+        // Locale('en', 'US'),
+      ],
+      locale: const Locale('id', 'ID'), // Set locale default ke Indonesia
+
       initialBinding: InitialBindings(),
       initialRoute: AppPages.INITIAL,
       getPages: AppPages.routes,

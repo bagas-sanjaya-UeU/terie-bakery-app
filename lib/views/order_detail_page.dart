@@ -38,7 +38,11 @@ class OrderDetailPage extends GetView<OrderDetailController> {
                   style: const TextStyle(
                       fontSize: 22, fontWeight: FontWeight.bold)),
               Text(
-                  "Tanggal: ${DateFormat('d MMMM yyyy, HH:mm', 'id_ID').format(order.createdAt)}"),
+                  "Tanggal Transaksi: ${DateFormat('d MMMM yyyy, HH:mm', 'id_ID').format(order.createdAt)}"),
+              Text(
+                  "Tanggal Harus Diterima: ${order.orderDate != null ? DateFormat('d MMMM yyyy', 'id_ID').format(DateTime.parse(order.orderDate!)) : '-'}",
+                  style:
+                      const TextStyle(color: Color.fromARGB(255, 248, 0, 0))),
               const SizedBox(height: 16),
               _buildSection("Status Pelacakan", _buildTrackingTimeline()),
               _buildSection("Produk Dipesan", _buildProductList()),

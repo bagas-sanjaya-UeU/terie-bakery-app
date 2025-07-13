@@ -292,21 +292,29 @@ class ApiService {
     required String address,
     required String phone,
     required double shippingFee,
+    String? orderDate, // 1. Tambahkan parameter opsional untuk tanggal
   }) async {
     if (_token == null)
       throw Exception('Sesi berakhir. Silakan login kembali.');
 
     try {
+      // 2. Buat body request sebagai Map agar mudah menambahkan field opsional
+      final Map<String, dynamic> body = {
+        'name': name,
+        'address': address,
+        'phone': phone,
+        'shipping_fee': shippingFee.toInt(),
+      };
+
+      // 3. Tambahkan 'order_date' ke body HANYA JIKA tidak null
+      if (orderDate != null) {
+        body['order_date'] = orderDate;
+      }
+
       final response = await http.post(
         Uri.parse('$_baseUrl/checkout'),
         headers: _headers,
-        body: jsonEncode({
-          'name': name,
-          'address': address,
-          'phone': phone,
-          'shipping_fee':
-              shippingFee.toInt(), // API sepertinya menerima integer
-        }),
+        body: jsonEncode(body), // Gunakan Map yang sudah dibuat
       );
 
       final data = jsonDecode(response.body);

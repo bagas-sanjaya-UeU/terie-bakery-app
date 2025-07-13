@@ -3,6 +3,7 @@ import 'ordered_product_model.dart'; // 1. Import model baru
 class OrderDetailModel {
   final int id;
   final String orderNumber;
+  final String? orderDate; // 2. Ganti tipe tanggal
   final String name;
   final String address;
   final String phone;
@@ -17,6 +18,7 @@ class OrderDetailModel {
   OrderDetailModel({
     required this.id,
     required this.orderNumber,
+    required this.orderDate, // 2. Ganti tipe tanggal
     required this.name,
     required this.address,
     required this.phone,
@@ -34,6 +36,7 @@ class OrderDetailModel {
         // Tambahkan pengecekan null dengan nilai default untuk semua field
         id: json["id"] ?? 0,
         orderNumber: json["order_number"] ?? '',
+        orderDate: json["order_date"] ?? '', // 2. Ganti tipe tanggal
         name: json["name"] ?? 'N/A',
         address: json["address"] ?? 'N/A',
         phone: json["phone"] ?? 'N/A',

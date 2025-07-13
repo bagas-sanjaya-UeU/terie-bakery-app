@@ -33,6 +33,10 @@ class CheckoutPage extends GetView<CheckoutController> {
                 "Detail Pengiriman", Icons.local_shipping_outlined),
             _buildShippingDetails(),
             const SizedBox(height: 24),
+            _buildSectionTitle(
+                "Tanggal Diterima Di tempat", Icons.calendar_today_outlined),
+            _buildSchedulePicker(context),
+            const SizedBox(height: 24),
             _buildSectionTitle("Rincian Biaya", Icons.receipt_long_outlined),
             _buildCostDetails(),
           ],
@@ -130,6 +134,42 @@ class CheckoutPage extends GetView<CheckoutController> {
                   ),
                 )),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSchedulePicker(BuildContext context) {
+    return Card(
+      elevation: 2,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: InkWell(
+        onTap: () => controller.pickOrderDateTime(context),
+        borderRadius: BorderRadius.circular(12),
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Expanded(
+                child: Obx(() {
+                  if (controller.selectedDateTime.value == null) {
+                    return const Text("Pilih tanggal & waktu Diterima");
+                  } else {
+                    // Format tanggal dan waktu yang dipilih
+                    final formattedDate =
+                        DateFormat('EEEE, d MMMM yyyy - HH:mm', 'id_ID')
+                            .format(controller.selectedDateTime.value!);
+                    return Text(
+                      formattedDate,
+                      style: const TextStyle(fontWeight: FontWeight.bold),
+                    );
+                  }
+                }),
+              ),
+              const Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey),
+            ],
+          ),
         ),
       ),
     );
