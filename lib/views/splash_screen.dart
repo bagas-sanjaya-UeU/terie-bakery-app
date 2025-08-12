@@ -5,9 +5,8 @@ import '../controllers/splash_controller.dart';
 class SplashScreen extends StatelessWidget {
   SplashScreen({Key? key}) : super(key: key);
 
-  // Daftarkan controller. Logika pengecekan token akan berjalan otomatis
-  // saat controller diinisialisasi (di dalam onReady).
-  final SplashController controller = Get.put(SplashController());
+  // Controller disediakan oleh SplashBinding melalui routes
+  final SplashController controller = Get.find<SplashController>();
 
   @override
   Widget build(BuildContext context) {
@@ -23,15 +22,6 @@ class SplashScreen extends StatelessWidget {
               height: 250,
             ),
             const SizedBox(height: 20),
-            const Text(
-              'Terie Bakery',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 24,
-                color: Colors.brown,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
             const SizedBox(height: 30),
             const CircularProgressIndicator(color: Colors.brown),
           ],

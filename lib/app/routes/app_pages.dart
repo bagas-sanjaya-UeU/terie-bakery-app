@@ -11,6 +11,7 @@ import '../../../../views/checkout_page.dart';
 import '../../../../views/product_detail_page.dart';
 import '../../bindings/product_detail_binding.dart';
 import '../../bindings/checkout_binding.dart';
+import '../../bindings/login_binding.dart';
 import '../../../../views/payment_page.dart' as payment;
 import '../../../../views/transaction_success_page.dart';
 import '../../../../views/transaction_failed_page.dart';
@@ -20,6 +21,9 @@ import '../../../../views/order_detail_page.dart';
 import '../../bindings/order_detail_binding.dart';
 import '../../../../views/edit_profile_page.dart';
 import '../../bindings/edit_profile_binding.dart';
+import '../../../../views/verify_otp_page.dart';
+import '../../../../views/reset_password_page.dart';
+import '../../bindings/splash_binding.dart';
 
 // Import file routes
 part 'app_routes.dart';
@@ -31,11 +35,13 @@ class AppPages {
   static final routes = [
     GetPage(
       name: Routes.SPLASH,
-      page: () => SplashScreen(),
+  page: () => SplashScreen(),
+  binding: SplashBinding(),
     ),
     GetPage(
       name: Routes.LOGIN,
       page: () => LoginPage(),
+      binding: LoginBinding(),
     ),
     GetPage(
       name: Routes.REGISTER,
@@ -44,6 +50,14 @@ class AppPages {
     GetPage(
       name: Routes.FORGOT_PASSWORD,
       page: () => ForgotPasswordPage(),
+    ),
+    GetPage(
+      name: Routes.VERIFY_OTP,
+      page: () => VerifyOtpPage(email: Get.arguments as String),
+    ),
+    GetPage(
+      name: Routes.RESET_PASSWORD,
+      page: () => ResetPasswordPage(email: Get.arguments as String),
     ),
     GetPage(
       name: Routes.HOME,

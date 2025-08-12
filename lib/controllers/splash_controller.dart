@@ -17,6 +17,11 @@ class SplashController extends GetxController {
     // Beri sedikit jeda agar splash screen terlihat, ini bagus untuk UX
     await Future.delayed(const Duration(seconds: 3));
 
+    // Jika saat ini bukan di Splash, jangan navigasi agar tidak menimpa halaman lain
+    if (Get.currentRoute != Routes.SPLASH) {
+      return;
+    }
+
     // Baca token dari GetStorage
     final token = _storage.read('access_token');
 
@@ -24,10 +29,10 @@ class SplashController extends GetxController {
     if (token != null && token.isNotEmpty) {
       // Jika ada token, pengguna sudah login. Arahkan ke Beranda.
       // Get.offAllNamed akan menghapus semua halaman sebelumnya dari tumpukan.
-      Get.offAllNamed(Routes.HOME);
+  Get.offAllNamed(Routes.HOME);
     } else {
       // Jika tidak ada token, arahkan ke halaman Login.
-      Get.offAllNamed(Routes.LOGIN);
+  Get.offAllNamed(Routes.LOGIN);
     }
   }
 }

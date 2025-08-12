@@ -480,6 +480,58 @@ class ApiService {
     }
   }
 
+  Future<bool> sendOtp(String email) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$_baseUrl/otp'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'email': email}),
+      );
+
+      print("Response status: ${response.statusCode}");
+      if (response.statusCode == 200) {
+        return true;
+      }
+      return false;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  Future<bool> verifyOtp(String email, String otp) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$_baseUrl/otp/verify'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'email': email, 'otp': otp}),
+      );
+
+      if (response.statusCode == 200) {
+        return true;
+      }
+      return false;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  Future<bool> resetPassword(String email, String newPassword) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$_baseUrl/reset-password'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'email': email, 'password': newPassword}),
+      );
+
+      if (response.statusCode == 200) {
+        return true;
+      }
+      return false;
+    } catch (e) {
+      return false;
+    }
+  }
+
   Future<void> logout() async {
     await _storage.remove('access_token');
     // Jika API Anda punya endpoint untuk logout, panggil di sini

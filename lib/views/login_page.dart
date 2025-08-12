@@ -9,9 +9,9 @@ import '../app/routes/app_pages.dart';
 class LoginPage extends StatelessWidget {
   LoginPage({Key? key}) : super(key: key);
 
-  // 2. Dapatkan instance controller. Get.put() akan membuat controller baru
-  //    jika belum ada, atau menemukan yang sudah ada.
-  final LoginController controller = Get.put(LoginController());
+  // 2. Dapatkan instance controller menggunakan Get.find()
+  //    karena controller sudah di-inject melalui binding
+  final LoginController controller = Get.find<LoginController>();
 
   @override
   Widget build(BuildContext context) {
@@ -33,7 +33,7 @@ class LoginPage extends StatelessWidget {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Image.asset('assets/image/Logo_terie.png', width: 150),
+                  Image.asset('assets/image/Koki.png', width: 150),
                 ],
               ),
             ),
@@ -109,16 +109,16 @@ class LoginPage extends StatelessWidget {
                         ),
                       )),
                   const SizedBox(height: 10),
-                  // Align(
-                  //   alignment: Alignment.centerRight,
-                  //   child: TextButton(
-                  //     // 6. Gunakan Get.toNamed untuk navigasi
-                  //     onPressed: () => Get.toNamed(Routes.FORGOT_PASSWORD),
-                  //     child: const Text('Lupa Password?',
-                  //         style: TextStyle(color: Colors.white)),
-                  //   ),
-                  // ),
-                  // const SizedBox(height: 5),
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: TextButton(
+                      // 6. Gunakan Get.toNamed untuk navigasi
+                      onPressed: () => Get.toNamed(Routes.FORGOT_PASSWORD),
+                      child: const Text('Lupa Password?',
+                          style: TextStyle(color: Colors.white)),
+                    ),
+                  ),
+                  const SizedBox(height: 5),
                   Center(
                     // 7. Bungkus tombol dengan Obx untuk menampilkan loading
                     child: Obx(() {
