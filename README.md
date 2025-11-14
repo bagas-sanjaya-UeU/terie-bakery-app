@@ -1,5 +1,5 @@
 # terie_bakery
-
+Aplikasi pemesanan Toko roti Terie Bakery - Client
 A new Flutter project.
 
 ## Getting Started
